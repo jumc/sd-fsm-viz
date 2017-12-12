@@ -1,10 +1,3 @@
-/*
-# Lendo sequencia de entradas
-buffer = input()
-input_sequence = buffer.split(' ')
-for fsm_input in input_sequence:
-    print(fsm_input)*/
-
 var StateMachine = require('javascript-state-machine');
 var visualize = require('javascript-state-machine/lib/visualize');
 var Viz = require('viz.js');
@@ -24,44 +17,30 @@ fs.readFile(table_file, function(err, data) {
   if (err) 
   	throw err;
 
-  table = data.toString().split('\n');
+  table = data.toString().replace(/\r/g,'').split('\n');
   type = parseInt(table[0][0]);
-  n_states = parseInt(table[1][0]);
-  n_inputs = parseInt(table[1][2]);
-  n_outputs = parseInt(table[1][4]);
-
-  //Adicionando estados
+  properties = table[1].split(' ')
+  n_states = parseInt(properties[0]);
+  n_inputs = parseInt(properties[1]);
+  n_outputs = parseInt(properties[2]);
   state_bytes = Math.ceil(Math.log(n_states, 2)) // Calcula numero minimo de bytes para codificar estados
-  fsm_states = []
-  for(i = 0; i < n_states; i++) {
-  	fsm_states.push(String.fromCharCode(65+i))
-  }
 
   //Adicionando transicoes
   fsm_transitions = []
   for(i = 0; i < (n_states*(2**n_inputs)); i++) { //Cada estado pode deve estar mapeado para todas as possibilidades de input
-  	/*if(table.upper() != 'X'){
-		fsm_transitions.push({ name: 
-		table[i + 2][state_bytes*2 :state_bytes*2 + n_inputs*2], ,     
-			from: 'solid',  
-			to: 'liquid' });
-
-		table[i][state_bytes*2 :state_bytes*2 + n_inputs*2], 
-			chr(65 + int(buffer[ : state_bytes*2].replace(' ', ''), 2)), 
-			chr(65 + int(buffer[state_bytes*2 + n_inputs*2 : state_bytes*4 + n_inputs*2].replace(' ', ''), 2))]);
-  	}*/
+  	line  = table[i + 2].replace(/\s/g,'');
+  	if(line[line.length-2] != 'X'){ //
+		fsm_transitions.push({ 
+			name: line.slice(state_bytes, state_bytes + n_inputs) + ' / '
+				+ line.slice(2*state_bytes + n_inputs, line.length),     
+			from: line.slice(0, state_bytes),  
+			to: line.slice(state_bytes + n_inputs, 2*state_bytes + n_inputs)});
+  	}
   }
 
-  console.log(fsm_states);
-
   var fsm = new StateMachine({
-	init: 'solid',
-	transitions: [
-	  { name: 'melt',     from: 'solid',  to: 'liquid' },
-	  { name: 'freeze',   from: 'liquid', to: 'solid'  },
-	  { name: 'vaporize', from: 'liquid', to: 'gas'    },
-	  { name: 'condense', from: 'gas',    to: 'liquid' }
-	],
+	init: table[2].replace(/\s/g,'').slice(0, state_bytes),
+	transitions: fsm_transitions,
 	methods: {
 	  onMelt:     function() { console.log('I melted')    },
 	  onFreeze:   function() { console.log('I froze')     },
@@ -69,6 +48,15 @@ fs.readFile(table_file, function(err, data) {
 	  onCondense: function() { console.log('I condensed') }
 	}
 	});
+
+
+  	console.log(fsm_transitions);
+  	/*
+# Lendo sequencia de entradas
+buffer = input()
+input_sequence = buffer.split(' ')
+for fsm_input in input_sequence:
+    print(fsm_input)*/
 
 	fs.writeFile('frame1.svg', (Viz(visualize(fsm))))
 });
