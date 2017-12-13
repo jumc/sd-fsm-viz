@@ -27,7 +27,6 @@ function runScript(scriptPath, callback) {
     });
 }
 
-
 fs.readFile(table_file, function(err, table_data) {
 	if (err) 
 		throw err;
@@ -53,67 +52,67 @@ fs.readFile(table_file, function(err, table_data) {
 	  	input = input_data.toString().replace(/\r/g,'').split(' ');
 
 	  	if(type == 0){
-	  		initial_state = table[2].replace(/\s/g,'').slice(0, state_bytes);
-	  		initial_transition = input[0] + '/0';  // Pensar em como fazer
+	  		initial_state = table[2].replace(/\s/g,'').slice(0, state_bytes).replace(/0/g,'o').replace(/1/g,'l');
 	  	}
 	  	else{
-	  		initial_state = table[2].replace(/\s/g,'').slice(0, state_bytes) + '/0';	
-	  		initial_transition = input[0];
+	  		initial_state = table[2].replace(/\s/g,'').slice(0, state_bytes).replace(/0/g,'o').replace(/1/g,'l') + 'xo';
 	  	}
-	  	
+
 	  	// Criando script que salva frames
 	  	var out = fs.createWriteStream('frameCreator.js', { encoding: "utf8" });
     	str = 'var StateMachine = require(\'javascript-state-machine\');\n' +
 			'var visualize = require(\'javascript-state-machine/lib/visualize\');\n' +
 			'var Viz = require(\'viz.js\');\n' +
-			'var fs = require(\'fs\');\n' +
-			'current_transition = \'' + initial_transition + '\';\n' +
+			'var fs = require(\'fs\');\n\n' +
 			'current_state = \'' + initial_state + '\';\n' +
-			'lines = ' + JSON.stringify(lines) + ';\n\n';
+			'lines = ' + JSON.stringify(lines).replace(/0/g,'o').replace(/1/g,'l') + ';\n\n';
 
+		transitions = [];
 		for(j = 0; j < input.length; j++) {
 			if(type == 0){
-		  		initial_transition = input[j] + '/0'; // Pensar em como fazer
+		  		transitions.push((input[j] + 'xo').replace(/0/g,'o').replace(/1/g,'l')); // Pensar em como fazer
 		  	}
 		  	else{
-		  		initial_transition = input[j];
+		  		transitions.push(input[j].replace(/0/g,'o').replace(/1/g,'l'));
 		  	}
-			str += 'fsm_transitions = [];\n' +
+			str += 'current_transition = \'' + transitions[j] + '\';\n' +
+			'fsm_transitions = [];\n' +
 			'for(i = 0; i < ' + lines.length + '; i++) {\n' + 
 				'if(lines[i][lines[i].length-2] != \'X\'){\n' +						
 					'dot_content = {};\n';
 
 			if(type == 0){
-				str += 'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') + \'/\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length) == current_transition && lines[i].slice(0, ' + state_bytes + ') == current_state)\n' +
+				str += 'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') + \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length) == current_transition && lines[i].slice(0, ' + state_bytes + ') == current_state)\n' +
 						'dot_content = {color: "red"};\n' +
 				'fsm_transitions.push({\n' + 
-					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') + \'/\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +     
+					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') + \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +    
 					'from: lines[i].slice(0, ' + state_bytes + '),\n' +  
 					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + '),\n' +
 					'dot: dot_content});\n' +
 					'} }\n';
 			}else { 
-				str += 'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'/0\' == current_state)\n' +
+				str += 'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'xo\' == current_state)\n' +
 						'dot_content = {color: "red"};\n' +
 				'fsm_transitions.push({\n' + 
-					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +     
-					'from: lines[i].slice(0, ' + state_bytes + ') + \'/0\',\n' +  
-					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ') + \'/\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
+					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +    
+					'from: lines[i].slice(0, ' + state_bytes + ') + \'xo\',\n' +  
+					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ')+ \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
 					'dot: dot_content});\n' +
 					'dot_content = {};\n' +
-					'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'/1\' == current_state)\n' +
+					'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'xl\' == current_state)\n' +
 						'dot_content = {color: "red"};\n' +
 					'fsm_transitions.push({\n' + 
 					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +     
-					'from: lines[i].slice(0, ' + state_bytes + ') + \'/1\',\n' +  
-					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ') + \'/\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
+					'from: lines[i].slice(0, ' + state_bytes + ') + \'xl\',\n' +  
+					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ') + \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
 					'dot: dot_content});}}\n';
 			}
-		  	str += 'current_transition = ' + initial_transition + ';\n' +
-			'var fsm = new StateMachine({init : current_state, transitions: fsm_transitions});\n' +
-			'fs.writeFile(\'frame' + j + '.svg\', (Viz(visualize(fsm))));\n' +
-			'current_state = fsm.state;\n\n';
-			//'fsm.' + initial_transition + '();\n' +
+		  	str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
+			'fs.writeFile(\'frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
+			for(k = 0; k < transitions.length; k++)
+				str += 'fsm.' + transitions[k] + '();\n';
+			str += 'current_state = fsm.state;\n'+
+			'console.log(current_state);\n\n';			
     	}
   		out.write(str);
     	out.end();
