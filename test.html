@@ -1,0 +1,55 @@
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+
+    <script>
+    var myImage = 0;
+    </script>
+    <style></style>
+  </head>
+  <body>
+    <h1 id='text'>  Maquina de Estados Gerada </h1>
+    <img id="theImage" >
+
+    <h6> Aperte o botão abaixo para ver a transição na maquina, só funciona depois de entrar com o arquivo</h6>
+    
+
+    <p><input type="button" id="theButton" value="Proximo Estado" onclick="pictureChange()"></p>
+
+    <h4>Entre com o arquivo das entradas </h4>
+
+
+    <input type="file" id="files" name="files[]" multiple />
+    <output id="list">As entradas são:</output>
+
+    <script>
+    var imageMax = 0;
+    var inputs =[]
+    document.getElementById("files").addEventListener('change' , function(){
+      var fr = new FileReader();
+
+      fr.onload = function(){
+        inputs.push(this.result.split(' '));
+        document.getElementById("list").textContent = "As entradas são: " + this.result;
+        imageMax = inputs[0].length;
+        console.log(imageMax);
+        console.log(inputs);
+      }
+      fr.readAsText(this.files[0]);
+    })
+
+    function pictureChange(){
+      if(myImage > imageMax - 1){
+        alert("Já foi por todos os estados")
+      }else{
+
+        document.getElementById("text").textContent = "Estrada " +  inputs[0][myImage];
+        document.getElementById("theImage").src="http://localhost:8080/static/frame"+myImage+".svg";
+        myImage = myImage + 1;
+      }
+    }
+    </script>
+
+  </body>
+</html>
