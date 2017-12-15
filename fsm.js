@@ -85,7 +85,7 @@ fs.readFile(table_file, function(err, table_data) {
 				str += 'fixed_fsm.' + input[k] + '();\n' +
 				'for(i = 0; i < ' + lines.length + '; i++)\n' + 
 					'if(lines[i].slice(0, ' + state_bytes + ') == state[' + k + '] && \'' + input[k] + '\' == lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '))\n' +
-					'output.push(lines[i].slice(5, lines[i].length));\n' +
+					'output.push(lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length));\n' +
 				'state.push(fixed_fsm.state);\n';
 			}
 		}
