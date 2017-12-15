@@ -28,7 +28,6 @@
     var inputs =[]
     document.getElementById("files").addEventListener('change' , function(){
       var fr = new FileReader();
-
       fr.onload = function(){
         inputs.push(this.result.split(' '));
         document.getElementById("list").textContent = "As entradas são: " + this.result;
@@ -38,13 +37,11 @@
       }
       fr.readAsText(this.files[0]);
     })
-
     function pictureChange(){
       if(myImage > imageMax){
         alert("Já foi por todos os estados")
       }else{
-
-        document.getElementById("text").textContent = "Estrada " +  inputs[0][myImage];
+        document.getElementById("text").textContent = "Apos input " +  inputs[0][myImage];
         document.getElementById("theImage").src="http://localhost:8080/static/frame"+myImage+".svg";
         myImage = myImage + 1;
       }
