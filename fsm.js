@@ -128,7 +128,7 @@ fs.readFile(table_file, function(err, table_data) {
 				str += '}}\n';
 				str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
 					'fs.writeFile(\'./public/frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
-				for(k = 0; k < input.length; k++)
+				for(k = 0; k < j + 1; k++)
 					str += 'fsm.' + input[k] + '();\n';
 				str += 'current_state = fsm.state;\n'+
 					'console.log(current_state);\n\n';		
