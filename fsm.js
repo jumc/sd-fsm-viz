@@ -1,8 +1,13 @@
 var StateMachine = require('javascript-state-machine');
 var visualize = require('javascript-state-machine/lib/visualize');
 var Viz = require('viz.js');
+var express = require('express');
+var Svg = require('svgutils').Svg;
 var fs = require('fs');
 var childProcess = require('child_process');
+var http = require('http');
+var path = require('path');
+var app = express();
 
 if (process.argv.length < 4) {
 	console.log('Usage: node ' + process.argv[1] + ' table_file' + ' input_file');
@@ -91,29 +96,27 @@ fs.readFile(table_file, function(err, table_data) {
 					'dot: dot_content});\n' +
 					'} }\n';
 			}else { 
-				str += 'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'xo\' == current_state)\n' +
-						'dot_content = {color: "red"};\n' +
-				'fsm_transitions.push({\n' + 
-					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +    
-					'from: lines[i].slice(0, ' + state_bytes + ') + \'xo\',\n' +  
-					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ')+ \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
-					'dot: dot_content});\n' +
-					'dot_content = {};\n' +
-					'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'xl\' == current_state)\n' +
-						'dot_content = {color: "red"};\n' +
+				for(k = 0; k < 2**n_outputs; k++){
+					current_output = k.toString(2).replace(/0/g,'o').replace(/1/g,'l');
+					str += 'dot_content = {};\n'+
+					'if(lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') == current_transition &&  lines[i].slice(0, ' + state_bytes + ') + \'x' + current_output + '\' == current_state)\n' +
+							'dot_content = {color: "red"};\n' +
 					'fsm_transitions.push({\n' + 
-					'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +     
-					'from: lines[i].slice(0, ' + state_bytes + ') + \'xl\',\n' +  
-					'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ') + \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
-					'dot: dot_content});}}\n';
+						'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +    
+						'from: lines[i].slice(0, ' + state_bytes + ') + \'x' + current_output + '\',\n' +  
+						'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ')+ \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
+						'dot: dot_content});\n';
+				}
+				str += '}}\n'
 			}
 		  	str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
-			'fs.writeFile(\'frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
+			'fs.writeFile(\'./public/frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
 			for(k = 0; k < transitions.length; k++)
 				str += 'fsm.' + transitions[k] + '();\n';
 			str += 'current_state = fsm.state;\n'+
 			'console.log(current_state);\n\n';			
     	}
+    	str += 'fs.writeFile(\'./public/frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
   		out.write(str);
     	out.end();
 
@@ -123,32 +126,19 @@ fs.readFile(table_file, function(err, table_data) {
 	});
 });
 
-var http = require('http');
-var fs = require('fs');
-
-var express = require('express');
-var app = express();
-var path = require('path');
-var Svg     = require('svgutils').Svg;
-
 app.use('/static', express.static(__dirname + '/public'));
 
 // viewed at http://localhost:8080
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname + '/test.html'));
-		console.log(__dirname)
-		if (req.url == "/1.jpg") {
-			console.log('oi')
-     var img = fs.readFileSync('/1.jpg');
-     res.writeHead(200, {'Content-Type': 'image/jpg' });
-     res.end(img, 'binary');
+	console.log(__dirname)
+	if (req.url == "/1.jpg") {
+	     var img = fs.readFileSync('/1.jpg');
+	     res.writeHead(200, {'Content-Type': 'image/jpg' });
+	     res.end(img, 'binary');
 
-     return;
-
-	 }else{
-		 console.log("aa")
+		 return;
 	 }
-
 });
 
 app.listen(8080);
