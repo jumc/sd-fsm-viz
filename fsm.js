@@ -88,6 +88,33 @@ fs.readFile(table_file, function(err, table_data) {
 					'output.push(lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length));\n' +
 				'state.push(fixed_fsm.state);\n';
 			}
+			str += 'fsm_transitions = [];\n' +
+				'for(i = 0; i < ' + lines.length + '; i++) {\n' + 
+					'if(lines[i][lines[i].length-2] != \'X\'){\n' +	
+					'fsm_transitions.push({\n' + 
+						'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + ') + \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +    
+						'from: lines[i].slice(0, ' + state_bytes + '),\n' +  
+						'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ')});\n' +
+						'}}\n';
+			str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
+					'fs.writeFile(\'./public/frame0.svg\', (Viz(visualize(fsm))));\n';
+		} else {
+			str += 'current_transition = \'' + input[0] + '\';\n' +
+			'fsm_transitions = [];\n' +
+			'for(i = 0; i < ' + lines.length + '; i++) {\n' + 
+				'if(lines[i][lines[i].length-2] != \'X\'){\n' +						
+					'dot_content = {};\n';
+			for(k = 0; k < 2**n_outputs; k++){
+				current_output = k.toString(2).replace(/0/g,'o').replace(/1/g,'l');
+				str += 'fsm_transitions.push({\n' + 
+						'name: lines[i].slice(' + state_bytes + ', ' + (state_bytes + n_inputs) + '),\n' +    
+						'from: lines[i].slice(0, ' + state_bytes + ') + \'x' + current_output + '\',\n' +  
+						'to: lines[i].slice(' + (state_bytes + n_inputs) + ', ' + (2*state_bytes + n_inputs) + ')+ \'x\' + lines[i].slice(' + (2*state_bytes + n_inputs) + ', lines[i].length),\n' +
+						'dot: dot_content});\n';
+			}
+			str += '}}\n';
+			str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
+				'fs.writeFile(\'./public/frame0.svg\', (Viz(visualize(fsm))));\n';
 		}
 		for(j = 0; j < input.length; j++) {
 			if(type == 0){
@@ -105,7 +132,7 @@ fs.readFile(table_file, function(err, table_data) {
 							'dot: dot_content});\n' +
 							'} }\n';
 				str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
-					'fs.writeFile(\'./public/frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
+					'fs.writeFile(\'./public/frame' + (j + 1) + '.svg\', (Viz(visualize(fsm))));\n';
 			
 
 			}else { 
@@ -127,7 +154,7 @@ fs.readFile(table_file, function(err, table_data) {
 				}
 				str += '}}\n';
 				str += 'var fsm = new StateMachine({init : \'' + initial_state + '\', transitions: fsm_transitions});\n' +
-					'fs.writeFile(\'./public/frame' + j + '.svg\', (Viz(visualize(fsm))));\n';
+					'fs.writeFile(\'./public/frame' + (j + 1) + '.svg\', (Viz(visualize(fsm))));\n';
 				for(k = 0; k < j + 1; k++)
 					str += 'fsm.' + input[k] + '();\n';
 				str += 'current_state = fsm.state;\n'+
