@@ -41,7 +41,7 @@
       if(myImage > imageMax){
         alert("Já foi por todos os estados")
       }else{
-        document.getElementById("text").textContent = "Apos input " +  inputs[0][myImage];
+        document.getElementById("text").textContent = "Apos input " +  inputs[0][myImage-1];
         document.getElementById("theImage").src="http://localhost:8080/static/frame"+myImage+".svg";
         myImage = myImage + 1;
       }
