@@ -4,13 +4,13 @@
     <meta content="">
 
     <script>
-    var myImage = 0;
+    var myImage = 1;
     </script>
     <style></style>
   </head>
   <body>
     <h1 id='text'>  Maquina de Estados Gerada </h1>
-    <img id="theImage" >
+    <img id="theImage" src = 'http://localhost:8080/static/frame0.svg'>
 
     <h6> Aperte o botão abaixo para ver a transição na maquina, só funciona depois de entrar com o arquivo</h6>
     
@@ -40,7 +40,7 @@
     })
 
     function pictureChange(){
-      if(myImage > imageMax - 1){
+      if(myImage > imageMax){
         alert("Já foi por todos os estados")
       }else{
 
