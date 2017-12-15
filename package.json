@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "express": "^4.16.2",
     "javascript-state-machine": "^3.0.1",
+    "svgutils": "^0.13.6",
     "viz.js": "^1.8.0"
   },
   "devDependencies": {},
