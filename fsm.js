@@ -122,3 +122,33 @@ fs.readFile(table_file, function(err, table_data) {
 		});
 	});
 });
+
+var http = require('http');
+var fs = require('fs');
+
+var express = require('express');
+var app = express();
+var path = require('path');
+var Svg     = require('svgutils').Svg;
+
+app.use('/static', express.static(__dirname + '/public'));
+
+// viewed at http://localhost:8080
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname + '/test.html'));
+		console.log(__dirname)
+		if (req.url == "/1.jpg") {
+			console.log('oi')
+     var img = fs.readFileSync('/1.jpg');
+     res.writeHead(200, {'Content-Type': 'image/jpg' });
+     res.end(img, 'binary');
+
+     return;
+
+	 }else{
+		 console.log("aa")
+	 }
+
+});
+
+app.listen(8080);
