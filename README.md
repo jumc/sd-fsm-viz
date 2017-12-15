@@ -2,10 +2,7 @@
 Instalação:
   (Instale Node.js)
   ```
-  npm install javascript-state-machine
-  npm install viz.js
-  npm install express
-  npm install svgutils
+  npm install
   ```
 Uso:
   ```
